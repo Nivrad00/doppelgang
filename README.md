@@ -1,7 +1,5 @@
 # doppelgang
 
-Code for DoppelGang, a Discord game bot!
-
 **Setup**
 
 The person who initiates the game is made the party leader, who is able to start rounds and end games. Other players join the game, with a minimum of 3 players and some undecided maximum. 
