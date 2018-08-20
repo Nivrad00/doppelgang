@@ -1,4 +1,6 @@
-# doppelgang
+# DoppelGang
+
+A Dsicord bot game that you can play with your friends!
 
 **Setup**
 
@@ -15,3 +17,5 @@ The goal of the adventurers is to figure out which player is the doppelganger, t
 There may be a limit on the rate of players' messages due to bot rate limiting. There may also be multiple bots.
 The round lasts a set amount of time, which may scale with the number of players. Players can also end a round early with a near-unanimous vote.
 After the round ends, each player is prompted to vote to kill a single other player, and the person who receives the most votes is killed. If the doppelganger is killed, the adventurers win. If an adventurer is killed, the doppelganger wins. A tie results in the doppelganger winning.
+
+**Currently implemented:** Starting/ending games, command handling, basic menu commands, parties, party leader, starting rounds
