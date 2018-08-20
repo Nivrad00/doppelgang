@@ -1,3 +1,5 @@
+const prefix = 'doppel'; // this is repeated from doppelganger.js but whatever
+
 class Game {
     constructor (partyLeader, channel) {
         this.partyLeader = partyLeader;
@@ -12,6 +14,36 @@ class Game {
         this.state = this.statesEnum.SETUP;
     }
 
+    get menu () {
+        var text = [
+            '**DoppelGang**',
+            'A game that you can play with your friends!',
+            '',
+            'Available commands:',
+            '* `' + prefix + ' ready`:  Start a round of DoppelGang.',
+            '* `' + prefix + ' join`:  Join the game.',
+            '* `' + prefix + ' leave`:  Leave the game.',
+            '* `' + prefix + ' end`:  Exit DoppelGang.',
+            '',
+            'Players:',
+            this.formattedPlayerList
+        ];
+        return text.join('\r\n');
+    }
+
+    get formattedPlayerList () {
+        var text = [];
+
+        for (var player of this.players) {
+            if (this.partyLeader == player)
+                text.push('* ' + player.username + ' (Party leader)');
+            else
+                text.push('* ' + player.username);
+        }
+
+        return text.join('\r\n');
+    }
+
     ready (user) {
         if (this.state != this.statesEnum.SETUP)
             return 'The round has already started.';
@@ -19,7 +51,7 @@ class Game {
             return 'Only the party leader can start the round.';
         else {
             this.state = this.statesEnum.PLAYING;
-            return 'The round has started!';
+            return 'Starting round.';
         }
     }
 
@@ -30,7 +62,7 @@ class Game {
             return 'You can\'t join the game in the middle of a round.';
         else {
             this.players.push(user);
-            return 'Added to game.';
+            return new ResponseData('Added to game.', this.menu);
         }
     }
     
@@ -41,8 +73,13 @@ class Game {
         else if (this.state != this.statesEnum.SETUP)
             return 'You can\'t leave the game in the middle of a round.';
         else {
-            this.players.splice(index, 1);
-            return 'Removed from game.';
+            if (this.players[index] == this.partyLeader) {
+                this.players.splice(index, 1);
+                this.partyLeader = this.players[0];
+            }
+            else
+                this.players.splice(index, 1);
+            return new ResponseData('Removed from game.', this.menu);
         }
     }
 
@@ -51,4 +88,4 @@ class Game {
     }
 }
 
-module.exports = Game;
+module.exports = { Game: Game, ResponseData: ResponseData };

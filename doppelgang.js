@@ -1,7 +1,7 @@
 const Discord = require('discord.js');
 const client = new Discord.Client();
 
-const Game = require('./game');
+const {Game, ResponseData} = require('./game');
 const config = require('./config');
 const prefix = 'doppel';
 var currentGame;
@@ -26,80 +26,99 @@ client.on('message', message => {
     // space after prefix is optional
 
     var exec = new RegExp('^' + prefix + '(.*)$').exec(content);
-    if (exec != null)
-        message.reply(handleCommand(exec[1].trim(), author, channel));
+    var responseData;
+    if (exec != null) {
+        responseData = handleCommand(exec[1].trim(), author, channel);
     
-    // check if game is empty
+        // respond to commands using the ResponseData object and checks if the game is empty
 
-    if (currentGame && currentGame.playerCount == 0) {
-        currentGame = undefined;
-        return 'No players left; game ended.';
+        if (responseData.reply)
+            message.reply(responseData.reply);
+            
+        if (currentGame && currentGame.playerCount == 0) {
+            currentGame = undefined;
+            channel.send('No players left; ending game.');
+            return;
+        }
+
+        if (responseData.other)
+            channel.send(responseData.other);
     }
 });
 
+// always returns a ResponseData object
 function handleCommand (command, author, channel) {
+    var response = 'default';
+
     switch (command) {
         case 'start':
             if (currentGame) {
                 if (currentGame.channel == channel)
-                    return 'A game is already running.';
+                    response = 'A game is already running.';
                 else
-                    return 'A game is already running in another channel.';
+                    response = 'A game is already running in another channel.';
             }
             else {
                 currentGame = new Game(author, channel);
-                return 'Game started.';
+                response = new ResponseData('Game started.', currentGame.menu);
             }
             break;
         
         case 'end':
             if (!currentGame || currentGame.channel != channel)
-                return 'There is no game running in this channel.';
+                response = 'There is no game running in this channel.';
             else if (currentGame.partyLeader != author)
-                return 'Only the party leader can end the game.';
+                response = 'Only the party leader can end the game.';
             else if (!currentGame.endConfirm) {
                 currentGame.endConfirm = true;
-                return 'Are you sure you want to end the game? (Input `' + prefix + ' end` to confirm or `' + prefix + ' cancel` to cancel.)';
+                response = 'Are you sure you want to end the game? (Input `' + prefix + ' end` to confirm or `' + prefix + ' cancel` to cancel.)';
             }
             else {
                 currentGame = undefined;
-                return 'Game ended.';
+                response = 'Game ended.';
             }   
             break;
         
         case 'cancel':
             if (currentGame && currentGame.channel == channel && currentGame.endConfirm) {
                 currentGame.endConfirm = false;
-                return 'Okay, the game will continue.';
+                response = 'Okay, the game will continue.';
             }
             else
-                return 'There is nothing to cancel right now.';
+                response = 'There is nothing to cancel right now.';
             break;
         
         case 'join':
-            if (currentGame && currentGame.channel == channel)
-                return currentGame.addPlayer(author);
+            if (currentGame && currentGame.channel == channel) {
+                response = currentGame.addPlayer(author);
+            }
             else
-                return 'There is no game running in this channel.';
+                response = 'There is no game running in this channel.';
             break;
 
         case 'leave':
-            if (currentGame && currentGame.channel == channel)
-                return currentGame.removePlayer(author);
+            if (currentGame && currentGame.channel == channel) {
+                response = currentGame.removePlayer(author);
+            }
             else
-                return 'There is no game running in this channel.';
+                response = 'There is no game running in this channel.';
             break;
 
         case 'ready':
             if (currentGame && currentGame.channel == channel)
-                return currentGame.ready(author);
+                response = currentGame.ready(author);
             else
-                return 'There is no game running in this channel.';
+                response = 'There is no game running in this channel.';
             break;
 
         default:
-            return 'Command not found.';
+            response = 'Command not found.';
     }
+
+    if (typeof response == 'string')
+        response = new ResponseData(response);
+
+    return response;
 }
     
 client.login(config.token);
