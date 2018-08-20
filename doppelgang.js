@@ -8,6 +8,6 @@ client.on('ready', () => {
 client.on('message', message => {
   if (message.content == 'doppel')
     message.reply('gang!');
-}
+});
 
 client.login('S1aseD6jd3EMOcCwP70n5IIlrgUNbI8A'); // key goes here
