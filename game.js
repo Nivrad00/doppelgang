@@ -88,4 +88,4 @@ class Game {
     }
 }
 
-module.exports = { Game: Game, ResponseData: ResponseData };
+module.exports = Game;

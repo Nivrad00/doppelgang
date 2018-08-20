@@ -1,7 +1,8 @@
 const Discord = require('discord.js');
 const client = new Discord.Client();
 
-const {Game, ResponseData} = require('./game');
+const Game = require('./Game');
+const ResponseData = require('./ResponseData');
 const config = require('./config');
 const prefix = 'doppel';
 var currentGame;
