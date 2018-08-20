@@ -5,6 +5,7 @@ const Game = require('./Game');
 const ResponseData = require('./ResponseData');
 const config = require('./config');
 const prefix = 'doppel';
+
 var currentGame;
 
 client.on('ready', () => {
@@ -23,15 +24,15 @@ client.on('message', message => {
         return;
     }
 
-    // tests for messages beginning with the prefix and gets the rest of the command
-    // space after prefix is optional
+    // tests for messages beginning with the prefix
+    // space after prefix is optional, in case we decide to use a symbol instead of a word
 
     var exec = new RegExp('^' + prefix + '(.*)$').exec(content);
     var responseData;
     if (exec != null) {
         responseData = handleCommand(exec[1].trim(), author, channel);
     
-        // respond to commands using the ResponseData object and checks if the game is empty
+        // responds to commands using the ResponseData object and checks if the game is empty
 
         if (responseData.reply)
             message.reply(responseData.reply);

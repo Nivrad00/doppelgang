@@ -6,6 +6,7 @@ class Game {
         this.channel = channel;
         this.endConfirm = false;
         this.players = [partyLeader];
+        this.partyCapacity = 6;
         
         this.statesEnum = {
             SETUP: 0,
@@ -60,6 +61,8 @@ class Game {
             return 'You\'re already in the game.';
         else if (this.state != this.statesEnum.SETUP)
             return 'You can\'t join the game in the middle of a round.';
+        else if (this.playerCount >= this.partyCapacity)
+            return 'The game is already full (Max ' + this.partyCapacity + ' players).';
         else {
             this.players.push(user);
             return new ResponseData('Added to game.', this.menu);
