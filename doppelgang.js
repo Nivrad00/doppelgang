@@ -15,15 +15,26 @@ client.on('message', message => {
     var author = message.author;
     var channel = message.channel;
 
-    if (content == 'doppel')
+    // easter egg
+
+    if (content == 'doppel') {
         message.channel.send('gang!');
+        return;
+    }
 
     // tests for messages beginning with the prefix and gets the rest of the command
     // space after prefix is optional
 
-    var exec = new RegExp('^' + prefix + '(.*)$').exec(content); 
+    var exec = new RegExp('^' + prefix + '(.*)$').exec(content);
     if (exec != null)
         message.reply(handleCommand(exec[1].trim(), author, channel));
+    
+    // check if game is empty
+
+    if (currentGame && currentGame.playerCount == 0) {
+        currentGame = undefined;
+        return 'No players left; game ended.';
+    }
 });
 
 function handleCommand (command, author, channel) {
@@ -37,27 +48,23 @@ function handleCommand (command, author, channel) {
             }
             else {
                 currentGame = new Game(author, channel);
-                    return 'Game started.';
+                return 'Game started.';
             }
             break;
         
         case 'end':
-            if (currentGame && currentGame.channel == channel) {
-                if (currentGame.partyLeader == author) {
-                    if (currentGame.endConfirm) {
-                        currentGame = undefined;
-                        return 'Game ended.';
-                    }
-                    else {
-                        currentGame.endConfirm = true;
-                        return 'Are you sure you want to end the game? (Input `' + prefix + ' end` to confirm or `' + prefix + ' cancel` to cancel.)';
-                    }
-                }
-                else
-                    return 'Only the party leader can end the game.';
-            }
-            else
+            if (!currentGame || currentGame.channel != channel)
                 return 'There is no game running in this channel.';
+            else if (currentGame.partyLeader != author)
+                return 'Only the party leader can end the game.';
+            else if (!currentGame.endConfirm) {
+                currentGame.endConfirm = true;
+                return 'Are you sure you want to end the game? (Input `' + prefix + ' end` to confirm or `' + prefix + ' cancel` to cancel.)';
+            }
+            else {
+                currentGame = undefined;
+                return 'Game ended.';
+            }   
             break;
         
         case 'cancel':
@@ -69,6 +76,27 @@ function handleCommand (command, author, channel) {
                 return 'There is nothing to cancel right now.';
             break;
         
+        case 'join':
+            if (currentGame && currentGame.channel == channel)
+                return currentGame.addPlayer(author);
+            else
+                return 'There is no game running in this channel.';
+            break;
+
+        case 'leave':
+            if (currentGame && currentGame.channel == channel)
+                return currentGame.removePlayer(author);
+            else
+                return 'There is no game running in this channel.';
+            break;
+
+        case 'ready':
+            if (currentGame && currentGame.channel == channel)
+                return currentGame.ready(author);
+            else
+                return 'There is no game running in this channel.';
+            break;
+
         default:
             return 'Command not found.';
     }
