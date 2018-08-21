@@ -8,6 +8,12 @@ const prefix = 'doppel';
 
 var currentGame;
 
+client.on('ready', () => {
+    console.log(`Logged in as ${client.user.tag}!`);
+});
+
+// returns true if the client user has the required permissions (and the server is up), else returns false
+
 client.checkPermissions = function (channel) {
     var guild = channel.guild;
     if (!guild.available) {
@@ -28,19 +34,29 @@ client.checkPermissions = function (channel) {
     }
 }
 
-client.on('ready', () => {
-    console.log(`Logged in as ${client.user.tag}!`);
-});
-
 client.on('message', message => {
     var content = message.content;
     var author = message.author;
     var channel = message.channel;
 
+    // prevent responding to self
+
+    if (author == client.user)
+        return;
+
     // easter egg
 
     if (content == 'doppel') {
         message.channel.send('gang!');
+        return;
+    }
+
+    if (channel.type == 'dm') {
+        if (currentGame) {
+            var response = currentGame.messageHandler.handle(message); 
+            if (response)
+                channel.send(response);
+        }
         return;
     }
 

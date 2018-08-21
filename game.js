@@ -2,6 +2,7 @@ const prefix = 'doppel'; // this is repeated from doppelganger.js but whatever
 const Discord = require('discord.js');
 const Round = require('./Round');
 const ResponseData = require('./ResponseData');
+const MessageHandler = require('./MessageHandler');
 
 // handles starting/ending games, building parties, and starting rounds
 
@@ -14,7 +15,7 @@ class Game {
         this.players = [partyLeader];
         this.partyCapacity = 6;
         this.client = client;
-        
+        this.messageHandler = new MessageHandler(this);
         this.roundID = 0;
         this.round;
         this.statesEnum = {
@@ -28,6 +29,7 @@ class Game {
         var text = [
             '**DoppelGang**',
             'A game that you can play with your "friends!"',
+            '(Please make sure that you are able to receive PMs from the DoppelGang bot.)',
             '',
             '**Available commands**',
             '* `' + prefix + ' ready`:  Start a round of DoppelGang.',
@@ -59,13 +61,13 @@ class Game {
             return 'The round has already started.';
         else if (this.partyLeader != user)
             return 'Only the party leader can start the round.';
-        else if (this.playerCount < 3)
-            return 'You need at least three players to play DoppelGang.';
+        // else if (this.playerCount < 3)
+        //     return 'You need at least three players to play DoppelGang.';
         else if (this.client.checkPermissions(this.channel)) {
             this.state = this.statesEnum.PLAYING;
             this.round = new Round(this, this.roundID);
             this.roundID ++;
-            return 'Starting round.';
+            return 'Starting round. Asking all players for role preference.';
         }
         else
             return '';
