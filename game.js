@@ -1,13 +1,22 @@
 const prefix = 'doppel'; // this is repeated from doppelganger.js but whatever
+const Discord = require('discord.js');
+const Round = require('./Round');
+const ResponseData = require('./ResponseData');
+
+// handles starting/ending games, building parties, and starting rounds
 
 class Game {
-    constructor (partyLeader, channel) {
+    constructor (partyLeader, channel, client) {
         this.partyLeader = partyLeader;
-        this.channel = channel;
+        this.channel = channel; // the channel that the game is initiated in, not the one that gameplay takes place in
+        this.guild = channel.guild
         this.endConfirm = false;
         this.players = [partyLeader];
         this.partyCapacity = 6;
+        this.client = client;
         
+        this.roundID = 0;
+        this.round;
         this.statesEnum = {
             SETUP: 0,
             PLAYING: 1
@@ -18,15 +27,15 @@ class Game {
     get menu () {
         var text = [
             '**DoppelGang**',
-            'A game that you can play with your friends!',
+            'A game that you can play with your "friends!"',
             '',
-            'Available commands:',
+            '**Available commands**',
             '* `' + prefix + ' ready`:  Start a round of DoppelGang.',
             '* `' + prefix + ' join`:  Join the game.',
             '* `' + prefix + ' leave`:  Leave the game.',
             '* `' + prefix + ' end`:  Exit DoppelGang.',
             '',
-            'Players:',
+            '**Players**',
             this.formattedPlayerList
         ];
         return text.join('\r\n');
@@ -50,10 +59,16 @@ class Game {
             return 'The round has already started.';
         else if (this.partyLeader != user)
             return 'Only the party leader can start the round.';
-        else {
+        else if (this.playerCount < 3)
+            return 'You need at least three players to play DoppelGang.';
+        else if (this.client.checkPermissions(this.channel)) {
             this.state = this.statesEnum.PLAYING;
+            this.round = new Round(this, this.roundID);
+            this.roundID ++;
             return 'Starting round.';
         }
+        else
+            return '';
     }
 
     addPlayer (user) {

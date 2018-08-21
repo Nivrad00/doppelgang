@@ -8,6 +8,26 @@ const prefix = 'doppel';
 
 var currentGame;
 
+client.checkPermissions = function (channel) {
+    var guild = channel.guild;
+    if (!guild.available) {
+        channel.send('Guild is unavailable. Try again later.');
+        return false;
+    }
+    else {
+        var canManageChannels = guild.members.get(this.user.id).permissions.has(Discord.Permissions.FLAGS.MANAGE_CHANNELS);
+        var canManageRoles = guild.members.get(this.user.id).permissions.has(Discord.Permissions.FLAGS.MANAGE_ROLES);
+        var isAdmin = guild.members.get(this.user.id).permissions.has(Discord.Permissions.FLAGS.ADMINISTRATOR);
+
+        if ((!canManageRoles || !canManageChannels) && !isAdmin) {
+            channel.send('DoppelGang requires the Manage Channels and Manage Roles permissions to work. Please enable these permissions and try again.');
+            return false;
+        }
+        else
+            return true;
+    }
+}
+
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
 });
@@ -34,7 +54,7 @@ client.on('message', message => {
     
         // responds to commands using the ResponseData object and checks if the game is empty
 
-        if (responseData.reply)
+        if (responseData && responseData.reply)
             message.reply(responseData.reply);
             
         if (currentGame && currentGame.playerCount == 0) {
@@ -43,7 +63,7 @@ client.on('message', message => {
             return;
         }
 
-        if (responseData.other)
+        if (responseData && responseData.other)
             channel.send(responseData.other);
     }
 });
@@ -61,7 +81,7 @@ function handleCommand (command, author, channel) {
                     response = 'A game is already running in another channel.';
             }
             else {
-                currentGame = new Game(author, channel);
+                currentGame = new Game(author, channel, client);
                 response = new ResponseData('Game started.', currentGame.menu);
             }
             break;
