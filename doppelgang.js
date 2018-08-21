@@ -158,5 +158,7 @@ function handleCommand (command, author, channel) {
 
     return response;
 }
+
+// Chrono was here
     
 client.login(config.token);
