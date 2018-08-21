@@ -26,4 +26,4 @@ The round lasts a set amount of time, which may scale with the number of players
 
 After the round ends, each player is prompted to vote to kill a single other player, and the person who receives the most votes is killed. If the doppelganger is killed, the adventurers win. If an adventurer is killed, the doppelganger wins. A tie results in the doppelganger winning.
 
-**Currently implemented:** Starting/ending games, command handling, basic menu commands, parties, party leader, starting rounds, bot permission checking, round channel creation, player permission editing
+**Currently implemented:** Starting/ending games, command handling, basic menu commands, parties, party leader, starting rounds, bot permission checking, round channel creation, player permission editing, preference prompting (but NOT preference time-out), preference setting, random color setting
