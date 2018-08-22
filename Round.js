@@ -137,12 +137,14 @@ class Round {
         // pref state timeout logic
         var round = this;
         setTimeout(function () {
-            for (var player of round.unsetPref) {
-                player.send('Preference automatically set to doppelganger.').catch(() => this.unableToMessageAlert(round.game.channel, player));
-                round.doppelCandidates.push(player);
+            if (round.state == round.statesEnum.PREFERENCES) {
+                for (var player of round.unsetPref) {
+                    player.send('Preference automatically set to doppelganger.').catch(() => this.unableToMessageAlert(round.game.channel, player));
+                    round.doppelCandidates.push(player);
+                }
+                round.unsetPref = [];
+                round.startDiscussion();
             }
-            round.unsetPref = [];
-            round.startDiscussion();
         }, this.prefTimeLimit * 1000);
     }
 
