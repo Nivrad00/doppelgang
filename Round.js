@@ -7,7 +7,8 @@ class Round {
         this.id = id;
         this.game = game;
         this.channel; // the channel that gameplay takes place in, not the channel where the game is initiated
-        this.prefTimeLimit = 15;
+        this.prefTimeLimit = 15; // in seconds
+        this.roundTimeLimit = 10; // in minutes
 
         // properties for role setting
 
@@ -20,10 +21,10 @@ class Round {
 
         this.colorHexes = {
             RED: 'FF0000',
-            BLUE: '00FF00',
-            GREEN: '0000FF',
-            YELLOW: 'FF00FF',
-            MAGENTA: 'FFFF00',
+            GREEN: '00FF00',
+            BLUE: '0000FF',
+            MAGENTA: 'FF00FF',
+            YELLOW: 'FFFF00',
             CYAN: '00FFFF'
         };
         this.colorArray = Object.keys(this.colorHexes);
@@ -114,10 +115,63 @@ class Round {
         return response;
     }
 
-    startDiscussion () {
+    startDiscussion () {        
+        var scenarios = [
+            'having a round of beer to celebrate their most recent victory,',
+            'setting up camp in a forest clearing',
+            'hiking up a treacherous mountain path',
+            'seeking an ancient treasure in the desert',
+            'in the middle of a D&D campaign',
+            'in the middle of a heated game of Uno',
+            'investigating an abandoned mansion',
+            'exploring an underground dungeon',
+            'in the middle of a long road trip',
+            'hitching a ride in an empty train wagon',
+            'setting up camp in an abandoned barn',
+            'barhopping throughout the city',
+            'taking a nice walk in the park',
+            'hard at work at the office',
+            'playing a match of Overwatch',
+            'riding a Ferris wheel at the fair',
+            'riding an elevator to the top of a skyscraper',
+            'hiking through a wild jungle',
+            'piloting their spaceship through the Orion Nebula',
+            'having breakfast at IHOP',
+            'infiltrating the HQ of a nefarious tech corporation',
+            'digging for the remains of an ancient civilization',
+            'preparing a herd of goats for ritual sacrifice',
+            'exploring a cave system full of monsters',
+            'hiding from zombies in an abandoned mall',
+            'riding a giant bird over the countryside'
+        ];
+        
+        var names = this.adventurers.map(a => a.username);
+        var intro = names.slice(0, names.length - 1).join(', ') + ' and ' + names[names.length - 1] 
+            + ' were ' + scenarios[(scenarios.length * Math.random()) << 0] + ' when they realized something was wrong: Their party had increased by one!\r\n'
+            + '**Find the doppelganger!**\r\n'
+            + '(Round will end in ' + this.roundTimeLimit + ' minutes)';
+
         this.setRoles();
         this.setColors();
-        this.makeRoundChannel();
+
+        // todo: tell the doppelganger every other player's color; include a link to the newly created channel.
+
+        for (var player of this.game.players) {
+            var str = 'Your color is **' + this.colorMap[player.id].toLowerCase() + '**.\r\n';
+            if (player == this.doppelganger) {
+                str += 'You are the **doppelganger**.\r\n'
+                     + 'Goal: Convince the party not to kill you by impersonating one of the adventurers.\r\n';
+            }
+            else {
+                str += 'You are an **adventurer.**\r\n'
+                     + 'Goal: Figure out which player is the doppelganger, then collectively vote to kill them.\r\n';
+            }
+            str += 'Type messages here to send them to the #doppelgang channel.';
+
+            player.send(str);
+        }
+
+        this.makeRoundChannel(intro);
         this.state = this.statesEnum.DISCUSSION;
     }
 
@@ -148,7 +202,7 @@ class Round {
         }, this.prefTimeLimit * 1000);
     }
 
-    makeRoundChannel () {
+    makeRoundChannel (intro) {
         var round = this;
         var guild = this.game.guild;
         var players = this.game.players;
@@ -159,7 +213,7 @@ class Round {
                 channel.overwritePermissions(guild.defaultRole, { 'VIEW_CHANNEL': false });
                 for (var player of players)
                     channel.overwritePermissions(player, { 'VIEW_CHANNEL': true, 'SEND_MESSAGES': false });
-                channel.overwritePermissions(bot, { 'VIEW_CHANNEL': true, 'SEND_MESSAGE': true }).then(() => channel.send('introduction message'));
+                channel.overwritePermissions(bot, { 'VIEW_CHANNEL': true, 'SEND_MESSAGE': true }).then(() => channel.send(intro));
                 round.channel = channel;
             }
         )
