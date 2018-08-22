@@ -1,6 +1,6 @@
 # DoppelGang
 
-A Dsicord bot game that you can play with your friends!
+A Discord bot game that you can play with your friends!
 
 **Setup**
 
