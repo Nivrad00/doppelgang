@@ -26,7 +26,7 @@ class Round {
             MAGENTA: 'FFFF00',
             CYAN: '00FFFF'
         };
-        this.colorArray = ['RED', 'BLUE', 'GREEN', 'YELLOW', 'MAGENTA', 'CYAN'];
+        this.colorArray = Object.keys(this.colorHexes);
         this.colorMap = {};
 
         // states
@@ -66,6 +66,7 @@ class Round {
         console.log(this.colorMap);
     }
 
+    // current issue: simultaneous splicing?
     setRoles () {
         if (this.doppelCandidates.length > 0) {
             var index = (this.doppelCandidates.length * Math.random()) << 0;
@@ -104,16 +105,20 @@ class Round {
         else
             console.log('Something went wrong with preference setting');
         
+        // pref state end logic
         var round = this;
         setTimeout(function () {
-            if (round.unsetPref.length == 0) {
-                round.setRoles();
-                round.setColors();
-                round.makeRoundChannel();
-                round.state = round.statesEnum.DISCUSSION;
-            }
+            if (round.unsetPref.length == 0)
+                round.startDiscussion();
         }, 50);
         return response;
+    }
+
+    startDiscussion () {
+        this.setRoles();
+        this.setColors();
+        this.makeRoundChannel();
+        this.state = this.statesEnum.DISCUSSION;
     }
 
     unableToMessageAlert (channel, player) {
@@ -128,6 +133,17 @@ class Round {
 
         for (var player of players)
             player.send(str).catch(() => this.unableToMessageAlert(this.game.channel, player));
+
+        // pref state timeout logic
+        var round = this;
+        setTimeout(function () {
+            for (var player of round.unsetPref) {
+                player.send('Preference automatically set to doppelganger.').catch(() => this.unableToMessageAlert(round.game.channel, player));
+                round.doppelCandidates.push(player);
+            }
+            round.unsetPref = [];
+            round.startDiscussion();
+        }, this.prefTimeLimit * 1000);
     }
 
     makeRoundChannel () {
