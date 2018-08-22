@@ -144,15 +144,15 @@ class Round {
             'hiding from zombies in an abandoned mall',
             'riding a giant bird over the countryside'
         ];
+
+        this.setRoles();
+        this.setColors();
         
         var names = this.adventurers.map(a => a.username);
         var intro = names.slice(0, names.length - 1).join(', ') + ' and ' + names[names.length - 1] 
             + ' were ' + scenarios[(scenarios.length * Math.random()) << 0] + ' when they realized something was wrong: Their party had increased by one!\r\n'
             + '**Find the doppelganger!**\r\n'
             + '(Round will end in ' + this.roundTimeLimit + ' minutes)';
-
-        this.setRoles();
-        this.setColors();
 
         // todo: tell the doppelganger every other player's color; include a link to the newly created channel.
 

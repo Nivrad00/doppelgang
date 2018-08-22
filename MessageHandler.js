@@ -25,7 +25,7 @@ class MessageHandler {
             
             var embed = new Discord.RichEmbed();
             embed.setColor(hex);
-            embed.addField(color, content, true);
+            embed.setDescription(content);
             round.channel.send(embed);
         }
     }
