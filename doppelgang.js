@@ -61,9 +61,9 @@ client.on('message', message => {
     }
 
     // tests for messages beginning with the prefix
-    // space after prefix is optional, in case we decide to use a symbol instead of a word
+    // space after prefix is mandatory for now
 
-    var exec = new RegExp('^' + prefix + '(.*)$').exec(content);
+    var exec = new RegExp('^' + prefix + ' (.*)$').exec(content);
     var responseData;
     if (exec != null) {
         responseData = handleCommand(exec[1].trim(), author, channel);

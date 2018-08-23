@@ -124,8 +124,8 @@ class Round {
             this.doppelganger = this.adventurers[index];
             this.adventurers.splice(index, 1);
         }
-        console.log(this.doppelganger);
-        console.log(this.adventurers);
+        console.log('doppelganger: ' + this.doppelganger.username);
+        console.log('adventurers: ', this.adventurers.map(a => a.username));
     }
 
     setPref (player, pref) {
@@ -190,16 +190,22 @@ class Round {
             'investigating the theft of the royal jewels'
         ];
 
+        // set roles and colors
+
         this.setRoles();
         this.setColors();
         
+        // make the channel and send the intro message
+
         var names = this.adventurers;
         var intro = names.slice(0, names.length - 1).join(', ') + ' and ' + names[names.length - 1] 
-            + ' were ' + scenarios[(scenarios.length * Math.random()) << 0] + ' when they realized something was wrong. Their party had increased by one.\r\n'
+            + ' were ' + scenarios[(scenarios.length * Math.random()) << 0] + ' when they realized something was wrong – their party had increased by one.\r\n'
             + '**Find the doppelganger!**\r\n'
-            + '(Round will end in ' + this.roundTimeLimit + ' minutes.)';
+            + '(Round will end automatically in ' + this.roundTimeLimit + ' minutes.)';
+            
+        this.makeRoundChannel(intro);
 
-        // todo: tell the doppelganger every other player's color; include a    link to the newly created channel.
+        // notify players with relevant info
 
         for (var player of this.game.players) {
             var str = 'Your color is **' + this.colorMap[player.id].toLowerCase() + '**.\r\n';
@@ -211,13 +217,33 @@ class Round {
                 str += 'You are an **adventurer**.\r\n'
                      + 'Goal: Figure out which player is the doppelganger, then collectively vote to kill them.\r\n';
             }
-            str += 'Type messages here to send them to the #doppelgang channel. You can also type `vote end` to vote to end the round early.';
+            // 'https://discordapp.com/channels/' + this.channel.guild.id + '/' + this.channel.id + '/' + startMessageID
+            str += 'Type messages here to send them to the #doppelgang channel. You can also type `vote end` to vote to end the round.';
 
             player.send(str);
         }
 
-        this.makeRoundChannel(intro);
+
         this.state = this.statesEnum.DISCUSSION;
+
+        // start the timers
+        var round = this;
+
+        setTimeout(function () {
+            if (round.state == round.statesEnum.DISCUSSION)
+                round.channel.send('One minute left in the round. Hurry up!');
+        }, (round.roundTimeLimit - 1) * 60 * 1000);
+
+
+        setTimeout(function () {
+            if (round.state == round.statesEnum.DISCUSSION)
+                round.channel.send('Round ending in ten seconds. Decide quickly!');
+        }, (round.roundTimeLimit * 60 - 10) * 1000);
+
+        setTimeout(function () {
+            if (round.state == round.statesEnum.DISCUSSION)
+                round.endDiscussion();
+        }, round.roundTimeLimit * 60 * 1000);
     }
 
     unableToMessageAlert (channel, player) {
@@ -258,8 +284,8 @@ class Round {
                 channel.overwritePermissions(guild.defaultRole, { 'VIEW_CHANNEL': false });
                 for (var player of players)
                     channel.overwritePermissions(player, { 'VIEW_CHANNEL': true, 'SEND_MESSAGES': false });
-                channel.overwritePermissions(bot, { 'VIEW_CHANNEL': true, 'SEND_MESSAGE': true }).then(() => channel.send(intro));
                 round.channel = channel;
+                channel.overwritePermissions(bot, { 'VIEW_CHANNEL': true, 'SEND_MESSAGE': true }).then(() => channel.send(intro));
             }
         )
     }
