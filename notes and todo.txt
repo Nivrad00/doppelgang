@@ -1,0 +1,15 @@
+todo
+
+finish basic functionality
+
+prevent simultaneous splicing errors
+add link to game channel to PM
+give additional color info to doppelganger
+allow party leader switching (manually)
+prevent party leader ragequitting during rounds
+allow players to send commands both in PM and in the setup channel
+add emojis to status messages for clarity
+colorblind mode
+help text
+make sure no timeout functions send if the game is exited first
+unlock channel after it's done
