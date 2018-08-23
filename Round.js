@@ -232,15 +232,11 @@ class Round {
         }
     }
 
-    // fills this.colorMap, mapping from player id to color. if there are no colors left to be assigned, the player is assigned 'NONE'.
     setColors () {
         var players = this.game.players.slice(0);
         this.shuffleArray(players);
         for (var i = 0; i < players.length; i ++) {
-            if (i < this.colorArray.length)
-                this.colorMap[players[i].id] = this.colorArray[i];
-            else
-                this.colorMap[players[i].id] = 'NONE';
+            this.colorMap[this.colorArray[i]] = players[i];
         }
         console.log(this.colorMap);
     }
