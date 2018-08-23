@@ -16,7 +16,7 @@ class Game {
         this.partyCapacity = 6;
         this.client = client;
         this.messageHandler = new MessageHandler(this);
-        this.roundID = 0;
+        this.roundID = 1;
         this.round;
         this.statesEnum = {
             SETUP: 0,
@@ -35,7 +35,7 @@ class Game {
             '* `' + prefix + ' ready`:  Start a round of DoppelGang.',
             '* `' + prefix + ' join`:  Join the game.',
             '* `' + prefix + ' leave`:  Leave the game.',
-            '* `' + prefix + ' end`:  Exit DoppelGang.',
+            '* `' + prefix + ' exit`:  Exit DoppelGang.',
             '',
             '**Players**',
             this.formattedPlayerList
@@ -71,6 +71,11 @@ class Game {
         }
         else
             return '';
+    }
+
+    endRound () {
+        this.state = this.statesEnum.SETUP;
+        this.round = undefined;
     }
 
     addPlayer (user) {
