@@ -8,7 +8,7 @@ class MessageHandler {
 
     handle (message) {
         var round = this.game.round;
-        if (!round)
+        if (!round || !this.game.players.includes(message.author))
             return;
         else if (round.state == round.statesEnum.PREFERENCES) {
             var content = message.content.toLowerCase();
@@ -32,6 +32,10 @@ class MessageHandler {
                 embed.setDescription(content);
                 round.channel.send(embed);
             }
+        }
+        else if (round.state == round.statesEnum.VOTING) {
+            var content = message.content.toLowerCase();
+            return round.voteKill(message.author, content);
         }
     }
 }

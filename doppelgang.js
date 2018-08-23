@@ -14,6 +14,8 @@ client.on('ready', () => {
 
 // returns true if the client user has the required permissions (and the server is up), else returns false
 
+client.createdChannels = [];
+
 client.checkPermissions = function (channel) {
     var guild = channel.guild;
     if (!guild.available) {
@@ -65,7 +67,8 @@ client.on('message', message => {
 
     var exec = new RegExp('^' + prefix + ' (.*)$').exec(content);
     var responseData;
-    if (exec != null) {
+
+    if (exec != null && !client.createdChannels.some(createdChannel => createdChannel.id == channel.id)) {
         responseData = handleCommand(exec[1].trim(), author, channel);
     
         // responds to commands using the ResponseData object and checks if the game is empty
@@ -102,18 +105,18 @@ function handleCommand (command, author, channel) {
             }
             break;
         
-        case 'end':
+        case 'exit':
             if (!currentGame || currentGame.channel != channel)
                 response = 'There is no game running in this channel.';
             else if (currentGame.partyLeader != author)
-                response = 'Only the party leader can end the game.';
+                response = 'Only the party leader can shut down the game.';
             else if (!currentGame.endConfirm) {
                 currentGame.endConfirm = true;
-                response = 'Are you sure you want to end the game? (Input `' + prefix + ' end` to confirm or `' + prefix + ' cancel` to cancel.)';
+                response = 'Are you sure you want to shut down the game? (Input `' + prefix + ' exit` to confirm or `' + prefix + ' cancel` to cancel.)';
             }
             else {
                 currentGame = undefined;
-                response = 'Game ended.';
+                response = 'Game exited.';
             }   
             break;
         

@@ -8,7 +8,8 @@ class Round {
         this.game = game;
         this.channel; // the channel that gameplay takes place in, not the channel where the game is initiated
         this.prefTimeLimit = 15; // in seconds
-        this.voteTimeLimit = 20; // in seconds
+        this.killVoteTimeLimit = 30; // in seconds
+        this.endVoteTimeLimit = 15; // in seconds
         this.roundTimeLimit = 10; // in minutes
 
         // properties for role setting
@@ -29,12 +30,18 @@ class Round {
             CYAN: '00FFFF'
         };
         this.colorArray = Object.keys(this.colorHexes);
-        this.colorMap = {};
+        this.colorMap = {}; // maps from ID to color
 
         // voting to end
 
-        this.voteMap = {}
-        this.wipeVotes();
+        this.endVoteMap = {} // maps from ID to whether they've voted to end or not (true/false)
+        this.wipeEndVotes();
+
+        // voting to kill
+
+        this.notVoted = [];
+        this.killVoteMap = {}; // maps from color to how many votes they've received
+        // can't fill killVoteMap yet because colorMap has to be filled first
 
         // states
 
@@ -42,50 +49,177 @@ class Round {
             INACTIVE: 0,
             PREFERENCES: 1,
             DISCUSSION: 2,
-            VOTING: 3,
-            ENDING: 4
+            VOTING: 3
         };
         this.state = this.statesEnum.INACTIVE;
         
         this.promptPref();
     }
 
-    get voteCount () {
-        return Object.values(this.voteMap).filter(a => a).length;
+    // number of people who have voted to end the round
+    get endVoteCount () {
+        return Object.values(this.endVoteMap).filter(a => a).length;
     }
 
-    wipeVotes () {
+    // reset map of votes to kill
+    wipeKillVotes () {
+        for (var player of this.game.players) {
+            this.killVoteMap[this.colorMap[player.id]] = 0;
+        }
+    }
+
+    // reset map of votes to end
+    wipeEndVotes () {
         for (var player of this.game.players)
-            this.voteMap[player.id] = false;
+            this.endVoteMap[player.id] = false;
     }
 
+    // process a single vote to end the round
     voteEnd (player) {
-        if (this.voteMap[player.id])
+        if (this.endVoteMap[player.id])
             player.send('You\'ve already voted to end the round.');
         else {
-            this.voteMap[player.id] = true;
+            player.send('Vote received.');
+            this.endVoteMap[player.id] = true;
             this.channel.send(this.colorMap[player.id] + ' has voted to end the round.\r\n'
-                + 'Total votes: ' + this.voteCount + '/' + this.game.players.length + ' (' + (this.game.players.length - 1) + ' votes needed)');
+                + 'Total votes: ' + this.endVoteCount + '/' + this.game.players.length + ' (' + (this.game.players.length - 1) + ' votes needed)');
 
-            if (this.voteCount >= this.game.players.length - 1) {
+            if (this.endVoteCount >= this.game.players.length - 1) {
                 this.endDiscussion();
             }
             
             var round = this;
-            if (this.voteCount == 1) {
+            if (this.endVoteCount == 1) {
                 setTimeout(function () {
                     if (round.state == round.statesEnum.DISCUSSION) {
                         round.channel.send('Not enough votes. Round will continue.');
-                        round.wipeVotes();
+                        round.wipeEndVotes();
                     }
-                }, this.voteTimeLimit * 1000);
+                }, this.endVoteTimeLimit * 1000);
             }
         }
     }
 
+    // end the voting stage
+    endVoting () {
+        var str = '**Vote Results**';
+
+        // print the vote results
+        for (var color of Object.keys(this.killVoteMap)) {
+
+            // retrieve the player ID that corresponds to the color
+            var playerID;
+            for (var id of Object.keys(this.colorMap)) {
+                if (this.colorMap[id] == color)
+                    playerID = id;
+            }
+            str += '\r\n* ' + color + ' <@' + playerID + '>: ' + this.killVoteMap[color] + ' vote' + (this.killVoteMap[color] == 1 ? '' : 's'); 
+        }
+
+        this.channel.send(str);
+
+        // figure out who was killed
+        var round = this;
+        var deadPlayers = this.game.players.reduce(function (collector, player) {
+                if (collector.length == 0) {
+                    collector.push(player);
+                    return collector;
+                }
+                var playerVotes = round.killVoteMap[round.colorMap[player.id]]; // how many votes the player got
+                var maxVotes = round.killVoteMap[round.colorMap[collector[0].id]]; // how many votes the players in collector got
+
+                if (playerVotes == maxVotes)
+                    collector.push(player);
+                else if (playerVotes > maxVotes)
+                    collector = [player];
+
+                return collector;
+            }, []);
+
+        if (deadPlayers.length > 1) {
+            str = 'The party couldn\'t decide who to kill, and the doppelganger, ' + this.doppelganger + ', went free...\r\n';
+            str += '**The doppelganger wins!**\r\n';
+        }
+        else if (this.doppelganger == deadPlayers[0]) {
+            str = 'The party decided to kill ' + this.colorMap[deadPlayers[0].id] + ', who turned out to be the doppelganger, ' + deadPlayers[0] + '.\r\n';
+            str += '**The adventurers win!**\r\n';
+        } 
+        else {
+            str = 'The party decided to kill ' + this.colorMap[deadPlayers[0].id] + ', who turned out to be an adventurer, ' + deadPlayers[0] + '.\r\n';
+            str += '**The doppelganger wins!**\r\n';
+        }
+
+        str += '(Return to the channel where the game was started to start another round.)';
+
+        this.channel.send(str);
+
+        // unlock channel and reset states
+        
+        for (var player of this.game.players)
+            this.channel.overwritePermissions(player, { 'VIEW_CHANNEL': true, 'SEND_MESSAGES': true });
+
+        this.state = this.statesEnum.INACTIVE;
+        this.game.endRound();
+    }
+
+    // process a single vote to kill
+    voteKill (player, vote) {
+        var response;
+        var colors = Object.values(this.colorMap).map(a => a.toLowerCase());
+
+        if (!this.game.players.includes(player))
+            console.log('Tried to set a kill vote for a player who doesn\'t exist');
+
+        else if (!colors.includes(vote))
+            response = 'Please enter one of the colors listed above.';
+
+        else if (!this.notVoted.includes(player))
+            response = 'You have already voted.';
+
+        else {
+            response = 'Voted to kill ' + vote.toUpperCase() + '.';
+            this.notVoted.splice(this.notVoted.indexOf(player), 1);
+            this.killVoteMap[vote.toUpperCase()] ++;
+        }
+
+        // vote state end logic
+        var round = this;
+        setTimeout(function () {
+            if (round.notVoted.length == 0)
+                round.endVoting();
+        }, 50);
+        return response;
+    }
+
+    // end the discussion stage
     endDiscussion () {
         this.state = this.statesEnum.VOTING;
-        this.channel.send('DEBUG: ending discussion');
+        this.wipeKillVotes(); // sets up this.killVoteMap
+        this.channel.send('Round is over. Asking players to vote for who to kill.');
+        
+        var str = 'Vote for the person you think is the doppelganger.\r\n(If you don\'t respond within ' + this.killVoteTimeLimit + ' seconds, your vote will be forfeited.)';
+        var colors = Object.values(this.colorMap);
+        var players = this.game.players;
+
+        for (var color of colors)
+            str += '\r\n* ' + color;
+            
+        this.notVoted = players.slice(0);
+
+        for (var player of players)
+            player.send(str).catch(() => this.unableToMessageAlert(this.game.channel, player));
+
+        // vote state timeout logic
+        var round = this;
+        setTimeout(function () {
+            if (round.state == round.statesEnum.VOTING) {
+                for (var player of round.notVoted)
+                    player.send('Out of time; vote forfeited.').catch(() => this.unableToMessageAlert(round.game.channel, player));
+                round.notVoted = [];
+                round.endVoting();
+            }
+        }, this.killVoteTimeLimit * 1000);
+        
     }
 
     // implementation of Durstenfield shuffle, by Laurens Holst on StackOverflow
@@ -199,7 +333,7 @@ class Round {
 
         var names = this.adventurers;
         var intro = names.slice(0, names.length - 1).join(', ') + ' and ' + names[names.length - 1] 
-            + ' were ' + scenarios[(scenarios.length * Math.random()) << 0] + ' when they realized something was wrong – their party had increased by one.\r\n'
+            + ' were ' + scenarios[(scenarios.length * Math.random()) << 0] + ' when they realized that their party had increased by one.\r\n'
             + '**Find the doppelganger!**\r\n'
             + '(Round will end automatically in ' + this.roundTimeLimit + ' minutes.)';
             
@@ -208,7 +342,7 @@ class Round {
         // notify players with relevant info
 
         for (var player of this.game.players) {
-            var str = 'Your color is **' + this.colorMap[player.id].toLowerCase() + '**.\r\n';
+            var str = 'Your color is **' + this.colorMap[player.id] + '**.\r\n';
             if (player == this.doppelganger) {
                 str += 'You are the **doppelganger**.\r\n'
                      + 'Goal: Convince the party not to kill you by impersonating one of the adventurers.\r\n';
@@ -279,12 +413,13 @@ class Round {
         var players = this.game.players;
         var bot = this.game.client.user;
 
-        guild.createChannel("doppelgang", "text", undefined, "Gameplay channel for DoppelGang round " + this.id).then(
+        guild.createChannel('doppelgang-round-' + this.id, 'text', undefined, 'Gameplay channel for DoppelGang').then(
             function (channel) {
                 channel.overwritePermissions(guild.defaultRole, { 'VIEW_CHANNEL': false });
                 for (var player of players)
                     channel.overwritePermissions(player, { 'VIEW_CHANNEL': true, 'SEND_MESSAGES': false });
                 round.channel = channel;
+                round.game.client.createdChannels.push(channel);
                 channel.overwritePermissions(bot, { 'VIEW_CHANNEL': true, 'SEND_MESSAGE': true }).then(() => channel.send(intro));
             }
         )
