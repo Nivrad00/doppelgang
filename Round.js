@@ -409,14 +409,6 @@ class Round {
         var players = this.game.players;
         var bot = this.game.client.user;
 
-        // Check if the channel(s) already exists, and if it does, delete it
-        guild.channels.array().forEach(function(element) {
-            if (element.name == 'doppelgang') {
-                console.log('Duplicate channels found, trying to delete them now')
-                guild.channels.get(element.id).delete('Duplicate channel');
-            }
-        });
-
         guild.createChannel("doppelgang", "text", undefined, "Gameplay channel for DoppelGang round " + this.id).then(
             function (channel) {
                 channel.overwritePermissions(guild.defaultRole, { 'VIEW_CHANNEL': false });

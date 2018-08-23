@@ -36,6 +36,13 @@ client.checkPermissions = function (channel) {
     }
 }
 
+client.exitGame = function () {
+    client.createdChannels.forEach(function (element) {
+        element.delete();
+    });
+    currentGame = undefined;
+}
+
 client.on('message', message => {
     var content = message.content;
     var author = message.author;
@@ -77,8 +84,8 @@ client.on('message', message => {
             message.reply(responseData.reply);
             
         if (currentGame && currentGame.playerCount == 0) {
-            currentGame = undefined;
-            channel.send('No players left; ending game.');
+            client.exitGame();
+            channel.send('No players left; ending game. Deleting all DoppelGang channels.');
             return;
         }
 
@@ -115,8 +122,8 @@ function handleCommand (command, author, channel) {
                 response = 'Are you sure you want to shut down the game? (Input `' + prefix + ' exit` to confirm or `' + prefix + ' cancel` to cancel.)';
             }
             else {
-                currentGame = undefined;
-                response = 'Game exited.';
+                client.exitGame();
+                response = 'Game exited. Deleting all DoppelGang channels.';
             }   
             break;
         
