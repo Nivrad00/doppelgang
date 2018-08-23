@@ -232,15 +232,11 @@ class Round {
         }
     }
 
-    // fills this.colorMap, mapping from player id to color. if there are no colors left to be assigned, the player is assigned 'NONE'.
     setColors () {
         var players = this.game.players.slice(0);
         this.shuffleArray(players);
         for (var i = 0; i < players.length; i ++) {
-            if (i < this.colorArray.length)
-                this.colorMap[players[i].id] = this.colorArray[i];
-            else
-                this.colorMap[players[i].id] = 'NONE';
+            this.colorMap[this.colorArray[i]] = players[i];
         }
         console.log(this.colorMap);
     }
@@ -413,7 +409,15 @@ class Round {
         var players = this.game.players;
         var bot = this.game.client.user;
 
-        guild.createChannel('doppelgang-round-' + this.id, 'text', undefined, 'Gameplay channel for DoppelGang').then(
+        // Check if the channel(s) already exists, and if it does, delete it
+        guild.channels.array().forEach(function(element) {
+            if (element.name == 'doppelgang') {
+                console.log('Duplicate channels found, trying to delete them now')
+                guild.channels.get(element.id).delete('Duplicate channel');
+            }
+        });
+
+        guild.createChannel("doppelgang", "text", undefined, "Gameplay channel for DoppelGang round " + this.id).then(
             function (channel) {
                 channel.overwritePermissions(guild.defaultRole, { 'VIEW_CHANNEL': false });
                 for (var player of players)
