@@ -8,6 +8,7 @@ class Round {
         this.game = game;
         this.channel; // the channel that gameplay takes place in, not the channel where the game is initiated
         this.prefTimeLimit = 15; // in seconds
+        this.voteTimeLimit = 20; // in seconds
         this.roundTimeLimit = 10; // in minutes
 
         // properties for role setting
@@ -30,6 +31,11 @@ class Round {
         this.colorArray = Object.keys(this.colorHexes);
         this.colorMap = {};
 
+        // voting to end
+
+        this.voteMap = {}
+        this.wipeVotes();
+
         // states
 
         this.statesEnum = {
@@ -42,6 +48,44 @@ class Round {
         this.state = this.statesEnum.INACTIVE;
         
         this.promptPref();
+    }
+
+    get voteCount () {
+        return Object.values(this.voteMap).filter(a => a).length;
+    }
+
+    wipeVotes () {
+        for (var player of this.game.players)
+            this.voteMap[player.id] = false;
+    }
+
+    voteEnd (player) {
+        if (this.voteMap[player.id])
+            player.send('You\'ve already voted to end the round.');
+        else {
+            this.voteMap[player.id] = true;
+            this.channel.send(this.colorMap[player.id] + ' has voted to end the round.\r\n'
+                + 'Total votes: ' + this.voteCount + '/' + this.game.players.length + ' (' + (this.game.players.length - 1) + ' votes needed)');
+
+            if (this.voteCount >= this.game.players.length - 1) {
+                this.endDiscussion();
+            }
+            
+            var round = this;
+            if (this.voteCount == 1) {
+                setTimeout(function () {
+                    if (round.state == round.statesEnum.DISCUSSION) {
+                        round.channel.send('Not enough votes. Round will continue.');
+                        round.wipeVotes();
+                    }
+                }, this.voteTimeLimit * 1000);
+            }
+        }
+    }
+
+    endDiscussion () {
+        this.state = this.statesEnum.VOTING;
+        this.channel.send('DEBUG: ending discussion');
     }
 
     // implementation of Durstenfield shuffle, by Laurens Holst on StackOverflow
@@ -117,7 +161,7 @@ class Round {
 
     startDiscussion () {        
         var scenarios = [
-            'having a round of beer to celebrate their most recent victory,',
+            'having a round of beer to celebrate their most recent victory',
             'setting up camp in a forest clearing',
             'hiking up a treacherous mountain path',
             'seeking an ancient treasure in the desert',
@@ -142,19 +186,20 @@ class Round {
             'preparing a herd of goats for ritual sacrifice',
             'exploring a cave system full of monsters',
             'hiding from zombies in an abandoned mall',
-            'riding a giant bird over the countryside'
+            'riding a giant bird over the countryside',
+            'investigating the theft of the royal jewels'
         ];
 
         this.setRoles();
         this.setColors();
         
-        var names = this.adventurers.map(a => a.username);
+        var names = this.adventurers;
         var intro = names.slice(0, names.length - 1).join(', ') + ' and ' + names[names.length - 1] 
-            + ' were ' + scenarios[(scenarios.length * Math.random()) << 0] + ' when they realized something was wrong: Their party had increased by one!\r\n'
+            + ' were ' + scenarios[(scenarios.length * Math.random()) << 0] + ' when they realized something was wrong. Their party had increased by one.\r\n'
             + '**Find the doppelganger!**\r\n'
-            + '(Round will end in ' + this.roundTimeLimit + ' minutes)';
+            + '(Round will end in ' + this.roundTimeLimit + ' minutes.)';
 
-        // todo: tell the doppelganger every other player's color; include a link to the newly created channel.
+        // todo: tell the doppelganger every other player's color; include a    link to the newly created channel.
 
         for (var player of this.game.players) {
             var str = 'Your color is **' + this.colorMap[player.id].toLowerCase() + '**.\r\n';
@@ -163,10 +208,10 @@ class Round {
                      + 'Goal: Convince the party not to kill you by impersonating one of the adventurers.\r\n';
             }
             else {
-                str += 'You are an **adventurer.**\r\n'
+                str += 'You are an **adventurer**.\r\n'
                      + 'Goal: Figure out which player is the doppelganger, then collectively vote to kill them.\r\n';
             }
-            str += 'Type messages here to send them to the #doppelgang channel.';
+            str += 'Type messages here to send them to the #doppelgang channel. You can also type `vote end` to vote to end the round early.';
 
             player.send(str);
         }
