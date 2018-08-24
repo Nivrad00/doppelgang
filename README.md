@@ -21,3 +21,5 @@ Players can join and leave the game using the "leave" and "join" commands. Once 
 Rounds last for ten minutes, during which the players can discuss with each other. The players can vote to end a round early at any time by sending "vote end" to the bot. After the round ends, each player is prompted via DM to enter the color of the player they want to kill. If the doppelganger receives the most votes, they are killed and the adventurers win. If any of the adventures receive the most votes, the doppelganger wins. A tie also results in the doppelganger winning.
 
 **Protip:** Press CTRL/CMD + K on Discord to quickly switch between your DM and the gameplay channel.
+
+Made by Nivrad00, Zach, and Chronocide.

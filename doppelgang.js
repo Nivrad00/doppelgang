@@ -7,6 +7,7 @@ const config = require('./config');
 const prefix = 'doppel';
 
 var currentGame;
+var startConfirm = false;
 
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
@@ -75,7 +76,13 @@ client.on('message', message => {
     var exec = new RegExp('^' + prefix + ' (.*)$').exec(content);
     var responseData;
 
-    if (exec != null && !client.createdChannels.some(createdChannel => createdChannel.id == channel.id)) {
+    if (startConfirm && currentGame.channel == channel) {
+        if (author == currentGame.players[0]) {
+            startConfirm = false;
+            channel.send(currentGame.menu);
+        }
+    }
+    else if (exec != null && !client.createdChannels.some(createdChannel => createdChannel.id == channel.id)) {
         responseData = handleCommand(exec[1].trim(), author, channel);
     
         // responds to commands using the ResponseData object and checks if the game is empty
@@ -89,7 +96,7 @@ client.on('message', message => {
             return;
         }
 
-        if (responseData && responseData.other)
+        if (responseData && responseData.other) 
             channel.send(responseData.other);
     }
 });
@@ -108,7 +115,8 @@ function handleCommand (command, author, channel) {
             }
             else {
                 currentGame = new Game(author, channel, client);
-                response = new ResponseData('Game started.', currentGame.menu);
+                startConfirm = true;
+                response = new ResponseData('Game started. (Type anything to continue)', new Discord.Attachment('https://i.imgur.com/mtcBYF4.jpg'));
             }
             break;
         
