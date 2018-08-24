@@ -159,6 +159,13 @@ function handleCommand (command, author, channel) {
                 response = 'There is no game running in this channel.';
             break;
 
+        case 'help':
+            if (currentGame && currentGame.channel == channel)
+                response = currentGame.help();
+            else
+                response = 'There is no game running in this channel.';
+        break;
+
         default:
             response = 'Command not found.';
     }

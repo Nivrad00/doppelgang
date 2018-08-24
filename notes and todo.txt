@@ -8,7 +8,7 @@ prevent party leader ragequitting during rounds
 allow players to send commands both in PM and in the setup channel
 add emojis to status messages for clarity
 colorblind mode
-help text
 make sure no timeout functions send if the game is exited first
 unlock channel after it's done
 use nicknames instead of usernames
+rate limiting	
