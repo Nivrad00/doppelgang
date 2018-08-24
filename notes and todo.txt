@@ -1,5 +1,6 @@
 todo
 
+figure out what's causing all the promise errors
 prevent simultaneous splicing errors
 add link to game channel to PM
 give additional color info to doppelganger
