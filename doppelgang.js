@@ -15,8 +15,6 @@ client.on('ready', () => {
 
 // returns true if the client user has the required permissions (and the server is up), else returns false
 
-client.createdChannels = [];
-
 client.checkPermissions = function (channel) {
     var guild = channel.guild;
     if (!guild.available) {
@@ -38,10 +36,11 @@ client.checkPermissions = function (channel) {
 }
 
 client.exitGame = function () {
-    client.createdChannels.forEach(function (element) {
-        if (/doppelgang/.test(element.name))
-            element.delete('Exiting DoppelGang.');
-    });
+    var channel = currentGame.roundChannel;
+    if (channel && channel.name == 'doppelgang') { // extra check to make sure it's named doppelgang
+        channel.delete('Exiting DoppelGang.');
+        currentGame.channel.send('Deleted gameplay channel.');
+    }
     currentGame = undefined;
 }
 
@@ -54,13 +53,6 @@ client.on('message', message => {
 
     if (author == client.user)
         return;
-
-    // easter egg
-
-    if (content == 'doppel') {
-        message.channel.send('gang!');
-        return;
-    }
 
     if (channel.type == 'dm') {
         if (currentGame) {
@@ -83,7 +75,12 @@ client.on('message', message => {
             channel.send(currentGame.menu);
         }
     }
-    else if (exec != null && !client.createdChannels.some(createdChannel => createdChannel.id == channel.id)) {
+    // easter egg
+    else if (content == 'doppel') {
+        message.channel.send('gang!');
+        return;
+    }
+    else if (exec != null && !(currentGame && currentGame.roundChannel && currentGame.roundChannel.id == channel.id)) {
         responseData = handleCommand(exec[1].trim(), author, channel);
     
         // responds to commands using the ResponseData object and checks if the game is empty
@@ -93,7 +90,7 @@ client.on('message', message => {
             
         if (currentGame && currentGame.playerCount == 0) {
             client.exitGame();
-            channel.send('No players left; ending game. Deleting all DoppelGang channels.');
+            channel.send('No players left; exiting game..');
             return;
         }
 
@@ -132,7 +129,7 @@ function handleCommand (command, author, channel) {
             }
             else {
                 client.exitGame();
-                response = 'Game exited. Deleting all DoppelGang channels.';
+                response = 'Game exited.';
             }   
             break;
         

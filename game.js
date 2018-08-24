@@ -10,6 +10,7 @@ class Game {
     constructor (partyLeader, channel, client) {
         this.partyLeader = partyLeader;
         this.channel = channel; // the channel that the game is initiated in, not the one that gameplay takes place in
+        this.roundChannel; // the channel that the gameplay takes place in
         this.guild = channel.guild
         this.endConfirm = false;
         this.players = [partyLeader];
