@@ -39,7 +39,8 @@ client.checkPermissions = function (channel) {
 
 client.exitGame = function () {
     client.createdChannels.forEach(function (element) {
-        element.delete('Exiting DoppelGang.');
+        if (/doppelgang/.test(element.name))
+            element.delete('Exiting DoppelGang.');
     });
     currentGame = undefined;
 }
