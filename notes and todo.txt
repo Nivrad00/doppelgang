@@ -1,7 +1,5 @@
 todo
 
-finish basic functionality
-
 prevent simultaneous splicing errors
 add link to game channel to PM
 give additional color info to doppelganger
@@ -13,3 +11,4 @@ colorblind mode
 help text
 make sure no timeout functions send if the game is exited first
 unlock channel after it's done
+use nicknames instead of usernames

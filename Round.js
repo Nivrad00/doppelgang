@@ -236,7 +236,10 @@ class Round {
         var players = this.game.players.slice(0);
         this.shuffleArray(players);
         for (var i = 0; i < players.length; i ++) {
-            this.colorMap[this.colorArray[i]] = players[i];
+            if (i < this.colorArray.length)
+                this.colorMap[players[i].id] = this.colorArray[i];
+            else
+                this.colorMap[players[i].id] = 'NONE';
         }
         console.log(this.colorMap);
     }
@@ -348,7 +351,7 @@ class Round {
                      + 'Goal: Figure out which player is the doppelganger, then collectively vote to kill them.\r\n';
             }
             // 'https://discordapp.com/channels/' + this.channel.guild.id + '/' + this.channel.id + '/' + startMessageID
-            str += 'Type messages here to send them to the #doppelgang channel. You can also type `vote end` to vote to end the round.';
+            str += 'Type messages here to send them to the #doppelgang-round-' + this.id + ' channel. You can also type `vote end` to vote to end the round.';
 
             player.send(str);
         }
@@ -409,7 +412,7 @@ class Round {
         var players = this.game.players;
         var bot = this.game.client.user;
 
-        guild.createChannel("doppelgang", "text", undefined, "Gameplay channel for DoppelGang round " + this.id).then(
+        guild.createChannel("doppelgang-round-" + this.id, "text", undefined, "Gameplay channel for DoppelGang").then(
             function (channel) {
                 channel.overwritePermissions(guild.defaultRole, { 'VIEW_CHANNEL': false });
                 for (var player of players)
