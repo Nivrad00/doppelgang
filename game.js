@@ -13,6 +13,7 @@ class Game {
         this.roundChannel; // the channel that the gameplay takes place in
         this.guild = channel.guild
         this.endConfirm = false;
+        this.startConfirm = true;
         this.players = [partyLeader];
         this.partyCapacity = 6;
         this.client = client;
@@ -102,33 +103,18 @@ class Game {
     }
 
     addPlayer (user) {
-        if (this.players.includes(user))
-            return 'You\'re already in the game.';
-        else if (this.state != this.statesEnum.SETUP)
-            return 'You can\'t join the game in the middle of a round.';
-        else if (this.playerCount >= this.partyCapacity)
-            return 'The game is already full (Max ' + this.partyCapacity + ' players).';
-        else {
-            this.players.push(user);
-            return new ResponseData('Added to game.', this.menu);
-        }
+        this.players.push(user);
+        return new ResponseData('Added to game.', this.menu);
     }
     
-    removePlayer (user) {
-        var index = this.players.indexOf(user);
-        if (index == -1)
-            return 'You\'re not in the game.';
-        else if (this.state != this.statesEnum.SETUP)
-            return 'You can\'t leave the game in the middle of a round.';
-        else {
-            if (this.players[index] == this.partyLeader) {
-                this.players.splice(index, 1);
-                this.partyLeader = this.players[0];
-            }
-            else
-                this.players.splice(index, 1);
-            return new ResponseData('Removed from game.', this.menu);
+    removePlayer (index) {;
+        if (this.players[index] == this.partyLeader) {
+            this.players.splice(index, 1);
+            this.partyLeader = this.players[0];
         }
+        else
+            this.players.splice(index, 1);
+        return new ResponseData('Removed from game.', this.menu);
     }
 
     get playerCount () {
