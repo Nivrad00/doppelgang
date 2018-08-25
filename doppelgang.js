@@ -91,7 +91,7 @@ client.on('message', message => {
     else if (exec != null && !(game && game.roundChannel && game.roundChannel.id == channel.id)) {
         responseData = handleCommand(exec[1].trim(), author, channel, game);
     
-        // responds to commands using the ResponseData object and checks if the game is empty
+        // responds to commands using the ResponseData object and checks if the game is empty 
 
         if (responseData && responseData.reply)
             message.reply(responseData.reply);
