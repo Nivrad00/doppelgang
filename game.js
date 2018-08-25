@@ -10,8 +10,10 @@ class Game {
     constructor (partyLeader, channel, client) {
         this.partyLeader = partyLeader;
         this.channel = channel; // the channel that the game is initiated in, not the one that gameplay takes place in
+        this.roundChannel; // the channel that the gameplay takes place in
         this.guild = channel.guild
         this.endConfirm = false;
+        this.startConfirm = true;
         this.players = [partyLeader];
         this.partyCapacity = 6;
         this.client = client;
@@ -34,10 +36,10 @@ class Game {
             'During a round of DoppelGang, players communicate anonymously with each other by sending the bot DMs, which are transferred to the gameplay channel with only a color to identify the sender. One player is the doppelganger, and the rest are adventurers. The adventurers must figure out which player is the doppelganger, then collectively vote to kill them. The doppelganger\'s goal is to survive by impersonating one of the adventurers, tricking them into killing one of their own.',
             '',
             '**Setup**',
-            'Players can join and leave the game using the "leave" and "join" commands. Once the party leader starts the round with the "ready" command, each player is asked via DM to set a preference for doppelganger or adventurer. The bot automatically assigns the players their roles and colors, then creates the gameplay channel and starts the round.',
+            'Players can join and leave the game using the "leave" and "join" commands. Once the party leader starts the round with the "ready" command, each player is asked via DM to set a preference for doppelganger or adventurer. The bot automatically assigns the players their roles and colors, then creates the gameplay channel and starts the discussion.',
             '',
             '**Gameplay**',
-            'Rounds last for ten minutes, during which the players can discuss with each other. The players can vote to end a round early at any time by sending "vote end" to the bot. After the round ends, each player is prompted via DM to enter the color of the player they want to kill. If the doppelganger receives the most votes, they are killed and the adventurers win. If any of the adventures receive the most votes, the doppelganger wins. A tie also results in the doppelganger winning.',
+            'The discussion lasts for ten minutes, during which the players should try to reach a consensus on who to kill. The players can vote to end the discussion early at any time by sending "vote end" to the bot. After the discussion ends, each player is prompted via DM to enter the color of the player they want to kill. If the doppelganger receives the most votes, they are killed and the adventurers win. If any of the adventures receive the most votes, the doppelganger wins. A tie also results in the doppelganger winning.',
             '',
             '**Protip:** Press CTRL/CMD + K on Discord to quickly switch between your DM and the gameplay channel.',
             '',
@@ -101,33 +103,18 @@ class Game {
     }
 
     addPlayer (user) {
-        if (this.players.includes(user))
-            return 'You\'re already in the game.';
-        else if (this.state != this.statesEnum.SETUP)
-            return 'You can\'t join the game in the middle of a round.';
-        else if (this.playerCount >= this.partyCapacity)
-            return 'The game is already full (Max ' + this.partyCapacity + ' players).';
-        else {
-            this.players.push(user);
-            return new ResponseData('Added to game.', this.menu);
-        }
+        this.players.push(user);
+        return new ResponseData('Added to game.', this.menu);
     }
     
-    removePlayer (user) {
-        var index = this.players.indexOf(user);
-        if (index == -1)
-            return 'You\'re not in the game.';
-        else if (this.state != this.statesEnum.SETUP)
-            return 'You can\'t leave the game in the middle of a round.';
-        else {
-            if (this.players[index] == this.partyLeader) {
-                this.players.splice(index, 1);
-                this.partyLeader = this.players[0];
-            }
-            else
-                this.players.splice(index, 1);
-            return new ResponseData('Removed from game.', this.menu);
+    removePlayer (index) {;
+        if (this.players[index] == this.partyLeader) {
+            this.players.splice(index, 1);
+            this.partyLeader = this.players[0];
         }
+        else
+            this.players.splice(index, 1);
+        return new ResponseData('Removed from game.', this.menu);
     }
 
     get playerCount () {

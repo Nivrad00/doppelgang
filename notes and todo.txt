@@ -1,15 +1,30 @@
 todo
 
+=====> allowing multiple game instances
+|
+| [DONE] make subsequent rounds re-use a single channel called #doppelganger
+| [DONE] change channel deletion logic to only delete the current round channel
+| [DONE] (get rid of the createdChannels construction)
+| [DONE] store games in a map from channel id to game 
+| [DONE] (delete keys of games instead of setting them to undefined)
+| [DONE] allow multiple games in a server, but only one per channel
+| [DONE] change start/end/join/leave logic
+|
+|_
+
+change wording from "end round" to "end discussion"
+prevent reacting
 figure out what's causing all the promise errors
-prevent simultaneous splicing errors
-add link to game channel to PM
+prevent simultaneous splicing errors (optional: restructer players to be a class instead of using a bunch of maps)
+add link to game channel to PM?
+add link to setup channel at end of game?
 give additional color info to doppelganger
 allow party leader switching (manually)
-prevent party leader ragequitting during rounds
-allow players to send commands both in PM and in the setup channel
+prevent party leader ragequitting (exiting) during rounds
 add emojis to status messages for clarity
 colorblind mode
 make sure no timeout functions send if the game is exited first
-unlock channel after it's done
 use nicknames instead of usernames
-rate limiting	
+rate limiting
+allow multiple games at once
+sending stats to me
