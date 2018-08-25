@@ -1,5 +1,5 @@
 const Discord = require('discord.js');
-const prefix = 'doppel'; // fuck it i'm basically copying this to every file at this point
+const prefix = 'doppel'; // i'm basically copying this to every file at this point
 
 class MessageHandler {
     constructor (game) {

@@ -77,11 +77,11 @@ class Round {
     // process a single vote to end the round
     voteEnd (player) {
         if (this.endVoteMap[player.id])
-            player.send('You\'ve already voted to end the round.');
+            player.send('You\'ve already voted to end the discussion.');
         else {
             player.send('Vote received.');
             this.endVoteMap[player.id] = true;
-            this.channel.send(this.colorMap[player.id] + ' has voted to end the round.\r\n'
+            this.channel.send(this.colorMap[player.id] + ' has voted to end the discussion.\r\n'
                 + 'Total votes: ' + this.endVoteCount + '/' + this.game.players.length + ' (' + (this.game.players.length - 1) + ' votes needed)');
 
             if (this.endVoteCount >= this.game.players.length - 1) {
@@ -92,7 +92,7 @@ class Round {
             if (this.endVoteCount == 1) {
                 setTimeout(function () {
                     if (round.state == round.statesEnum.DISCUSSION) {
-                        round.channel.send('Not enough votes. Round will continue.');
+                        round.channel.send('Not enough votes. Discussion will continue.');
                         round.wipeEndVotes();
                     }
                 }, this.endVoteTimeLimit * 1000);
@@ -198,7 +198,7 @@ class Round {
     endDiscussion () {
         this.state = this.statesEnum.VOTING;
         this.wipeKillVotes(); // sets up this.killVoteMap
-        this.channel.send('Round is over. Asking players to vote for who to kill.');
+        this.channel.send('Discussion is over. Asking players to vote for who to kill.');
         
         var str = 'Vote for the person you think is the doppelganger.\r\n(If you don\'t respond within ' + this.killVoteTimeLimit + ' seconds, your vote will be forfeited.)';
         var colors = Object.values(this.colorMap);
@@ -337,7 +337,7 @@ class Round {
         var intro = names.slice(0, names.length - 1).join(', ') + ' and ' + names[names.length - 1] 
             + ' were ' + scenarios[(scenarios.length * Math.random()) << 0] + ' when they realized that their party had increased by one.\r\n'
             + '**Find the doppelganger!**\r\n'
-            + '(Round will end automatically in ' + this.roundTimeLimit + ' minutes.)';
+            + '(Discussion will end automatically in ' + this.roundTimeLimit + ' minutes.)';
             
         this.makeRoundChannel(intro);
         this.game.roundChannel = this.channel;
@@ -355,7 +355,7 @@ class Round {
                      + 'Goal: Figure out which player is the doppelganger, then collectively vote to kill them.\r\n';
             }
             // 'https://discordapp.com/channels/' + this.channel.guild.id + '/' + this.channel.id + '/' + startMessageID
-            str += 'Type messages here to send them to the #doppelgang channel. You can also type `vote end` to vote to end the round.';
+            str += 'Type messages here to send them to the #doppelgang channel. To vote to end the discussion, type `vote end`.';
 
             player.send(str);
         }
@@ -368,13 +368,13 @@ class Round {
 
         setTimeout(function () {
             if (round.state == round.statesEnum.DISCUSSION)
-                round.channel.send('One minute left in the round. Hurry up!');
+                round.channel.send('One minute left in the discussion. Hurry up!');
         }, (round.roundTimeLimit - 1) * 60 * 1000);
 
 
         setTimeout(function () {
             if (round.state == round.statesEnum.DISCUSSION)
-                round.channel.send('Round ending in ten seconds. Decide quickly!');
+                round.channel.send('Discussion ending in ten seconds. Decide quickly!');
         }, (round.roundTimeLimit * 60 - 10) * 1000);
 
         setTimeout(function () {

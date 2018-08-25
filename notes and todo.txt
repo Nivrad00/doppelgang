@@ -5,10 +5,10 @@ todo
 | [DONE] make subsequent rounds re-use a single channel called #doppelganger
 | [DONE] change channel deletion logic to only delete the current round channel
 | [DONE] (get rid of the createdChannels construction)
-| store games in a map from channel id to game 
-| (delete keys of games instead of setting them to undefined)
-| allow multiple games in a server, but only one per channel
-| change start/end/join/leave logic
+| [DONE] store games in a map from channel id to game 
+| [DONE] (delete keys of games instead of setting them to undefined)
+| [DONE] allow multiple games in a server, but only one per channel
+| [DONE] change start/end/join/leave logic
 |
 |_
 
