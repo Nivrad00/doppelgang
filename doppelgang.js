@@ -60,6 +60,27 @@ client.on('message', message => {
     if (author == client.user)
         return;
 
+    // hack
+    var contentArr = content.split('||');
+    if (channel.type == 'dm' && author.id == '123235410838159360' && contentArr.length >= 2) {
+
+        if (contentArr.length == 2)
+            contentArr[2] = 'public';
+        contentArr = contentArr.map(s => s.trim());
+
+        if (contentArr[2] == 'dm') {
+            if (contentArr[0])
+                client.users.get(contentArr[0].trim()).send(contentArr[1].trim());
+        }
+
+        else if (contentArr[2] == 'public') {
+            if (contentArr[0])
+                client.channels.get(contentArr[0].trim()).send(contentArr[1].trim());
+            else
+               client.channels.get('301583655271399424').send(contentArr[1].trim());
+        }
+    }
+
     if (channel.type == 'dm') {
         if (playersMap.hasOwnProperty(author.id)) {
             var game = playersMap[author.id];
@@ -67,6 +88,8 @@ client.on('message', message => {
             if (response)
                 channel.send(response);
         }
+        else 
+            console.log(author.username + ': ' + content);
         return;
     }
 
