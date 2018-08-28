@@ -2,7 +2,7 @@
 
 Your party has been infiltrated by a shapeshifting doppelganger! Can you figure out who's who before it's too late?
 
-A Discord bot game for 3-6 players.
+A Discord bot game for 3-6 players. (To start a game, type `doppel start` in any channel.)
 
 **Permissions**
 
