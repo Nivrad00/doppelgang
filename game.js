@@ -39,7 +39,7 @@ class Game {
             'Players can join and leave the game using the "leave" and "join" commands. Once the party leader starts the round with the "ready" command, each player is asked via DM to set a preference for doppelganger or adventurer. The bot automatically assigns the players their roles and colors, then creates the gameplay channel and starts the discussion.',
             '',
             '**Gameplay**',
-            'The discussion lasts for ten minutes, during which the players should try to reach a consensus on who to kill. The players can vote to end the discussion early at any time by sending "vote end" to the bot. After the discussion ends, each player is prompted via DM to enter the color of the player they want to kill. If the doppelganger receives the most votes, they are killed and the adventurers win. If any of the adventures receive the most votes, the doppelganger wins. A tie also results in the doppelganger winning.',
+            'The discussion lasts for five minutes, during which the players should try to reach a consensus on who to kill. The players can vote to end the discussion early at any time by sending "vote end" to the bot. After the discussion ends, each player is prompted via DM to enter the color of the player they want to kill. If the doppelganger receives the most votes, they are killed and the adventurers win. If any of the adventures receive the most votes, the doppelganger wins. A tie also results in the doppelganger winning.',
             '',
             '**Protip:** Press CTRL/CMD + K on Discord to quickly switch between your DM and the gameplay channel.',
             '',

@@ -82,13 +82,14 @@ client.on('message', message => {
     }
 
     if (channel.type == 'dm') {
-        if (!playersMap.hasOwnProperty(author.id)) {
-            console.log(author.username + ': ' + content);
+        if (playersMap.hasOwnProperty(author.id)) {
             var game = playersMap[author.id];
             var response = game.messageHandler.handle(message); 
             if (response)
                 channel.send(response);
         }
+        else 
+            console.log(author.username + ': ' + content);
         return;
     }
 

@@ -10,7 +10,7 @@ class Round {
         this.prefTimeLimit = 15; // in seconds
         this.killVoteTimeLimit = 30; // in seconds
         this.endVoteTimeLimit = 15; // in seconds
-        this.roundTimeLimit = 10; // in minutes
+        this.roundTimeLimit = 5; // in minutes
 
         // properties for role setting
 
