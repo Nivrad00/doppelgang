@@ -85,8 +85,8 @@ class Game {
             return 'The round has already started.';
         else if (this.partyLeader != user)
             return 'Only the party leader can start the round.';
-        else if (this.playerCount < 3)
-            return 'You need at least three players to play DoppelGang.';
+        // else if (this.playerCount < 3)
+        //     return 'You need at least three players to play DoppelGang.';
         else if (this.client.checkPermissions(this.channel)) {
             this.state = this.statesEnum.PLAYING;
             this.round = new Round(this, this.roundID);
