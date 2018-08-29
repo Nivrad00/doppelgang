@@ -12,9 +12,7 @@ todo
 |
 |_
 
-change wording from "end round" to "end discussion"
 prevent reacting
-figure out what's causing all the promise errors
 prevent simultaneous splicing errors (optional: restructer players to be a class instead of using a bunch of maps)
 add link to game channel to PM?
 add link to setup channel at end of game?
