@@ -60,7 +60,13 @@ client.on('message', message => {
     if (author == client.user)
         return;
 
-    // hack
+    // respond to "@DoppelGang help"
+
+    if (message.isMentioned(client.user) && /help/.test(message.content))
+        message.respond('Type `' + prefix + ' start` to start a game of DoppelGang. (Other commands are provided in-game.)');
+
+    // hack for messing around
+
     var contentArr = content.split('||');
     if (channel.type == 'dm' && author.id == '123235410838159360' && contentArr.length >= 2) {
 
@@ -131,6 +137,7 @@ client.on('message', message => {
 });
 
 // always returns a ResponseData object
+
 function handleCommand (command, author, channel, game) {
     var response = 'default';
 
